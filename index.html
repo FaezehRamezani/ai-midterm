@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transfer Credit Planner — GTU Computer Science</title>
+<style>
+/* ═══════════════════════════════════════════════
+   RESET & VARIABLES
+═══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:        #0c1a38;
+  --navy-mid:    #162d5e;
+  --navy-soft:   #213c78;
+  --gold:        #c0922a;
+  --gold-light:  #e6b94a;
+  --gold-pale:   #fdf4e0;
+  --bg:          #eef2f9;
+  --surface:     #ffffff;
+  --surface-2:   #f7f9fd;
+  --border:      #dce3f0;
+  --border-soft: #eaeff8;
+  --text:        #0e1a30;
+  --text-mid:    #3d4f72;
+  --text-soft:   #7b8db8;
+  --green:       #0e7a50;
+  --green-bg:    #e5f6ef;
+  --green-border:#b2e4cf;
+  --red:         #b0292a;
+  --red-bg:      #fdeaea;
+  --red-border:  #f5bfbf;
+  --amber:       #a0620e;
+  --amber-bg:    #fff4e0;
+  --amber-border:#f5d99a;
+  --blue-tag-bg: #e7eeff;
+  --blue-tag:    #2048cc;
+  --r:           14px;
+  --r-sm:        8px;
+  --shadow:      0 2px 12px rgba(12,26,56,.07);
+  --shadow-md:   0 6px 28px rgba(12,26,56,.13);
+  --shadow-lg:   0 12px 48px rgba(12,26,56,.18);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+
+/* ═══════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════ */
+header {
+  background: linear-gradient(130deg, var(--navy) 0%, var(--navy-mid) 60%, var(--navy-soft) 100%);
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 3px 20px rgba(12,26,56,.4);
+}
+.hdr-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 68px;
+}
+.hdr-emblem {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(192,146,42,.5);
+}
+.hdr-text h1 { color: #fff; font-size: 1.1rem; font-weight: 700; letter-spacing: -.2px; }
+.hdr-text p  { color: rgba(255,255,255,.52); font-size: .73rem; margin-top: 1px; }
+.hdr-spacer  { flex: 1; }
+.hdr-tag {
+  background: rgba(255,255,255,.1);
+  color: rgba(255,255,255,.75);
+  border: 1px solid rgba(255,255,255,.15);
+  font-size: .71rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════ */
+main {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 32px 20px 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ═══════════════════════════════════════════════
+   CARDS
+═══════════════════════════════════════════════ */
+.card {
+  background: var(--surface);
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 26px 30px;
+  animation: fadeUp .38s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.card-title {
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text-soft);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.card-title::before {
+  content: '';
+  display: block;
+  width: 3px; height: 14px;
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+/* ═══════════════════════════════════════════════
+   SECTION 1 – PROGRAM CARD
+═══════════════════════════════════════════════ */
+.program-card-body {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+.program-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--navy);
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -.15px;
+  box-shadow: 0 4px 16px rgba(12,26,56,.25);
+}
+.program-dot {
+  width: 9px; height: 9px;
+  background: var(--gold-light);
+  border-radius: 50%;
+  animation: blink 2.2s ease-in-out infinite;
+}
+@keyframes blink {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: .5; transform: scale(1.25); }
+}
+.stat-grid {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.stat-box {
+  text-align: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-sm);
+  padding: 10px 20px;
+  min-width: 72px;
+}
+.stat-box strong {
+  display: block;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--navy);
+  line-height: 1.1;
+}
+.stat-box span {
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-soft);
+}
+.stat-box.passed strong { color: var(--green); }
+.stat-box.inprog strong { color: var(--amber); }
+
+/* ═══════════════════════════════════════════════
+   SECTION 2 – COURSES TABLE
+═══════════════════════════════════════════════ */
+.table-scroll { overflow-x: auto; border-radius: var(--r-sm); border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+thead tr { background: var(--navy); color: #fff; }
+thead th {
+  padding: 11px 14px;
+  text-align: left;
+  font-size: .68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  white-space: nowrap;
+}
+tbody tr {
+  border-bottom: 1px solid var(--border-soft);
+  transition: background .12s;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #f4f7ff; }
+tbody td { padding: 9px 14px; vertical-align: middle; }
+
+.code { font-family: 'SFMono-Regular','Consolas',monospace; font-size: .78rem; font-weight: 700; color: var(--navy-mid); }
+.sem-badge {
+  font-size: .7rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.badge-yes {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--green-bg); color: var(--green);
+  border: 1px solid var(--green-border);
+  font-size: .72rem; font-weight: 700;
+  padding: 3px 9px; border-radius: 20px; white-space: nowrap;
+}
+.badge-no {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--red-bg); color: var(--red);
+  border: 1px solid var(--red-border);
+  font-size: .72rem; font-weight: 700;
+  padding: 3px 9px; border-radius: 20px; white-space: nowrap;
+}
+.row-added { background: #fffbee !important; }
+.row-added td:first-child::after { content: '  ✦'; color: var(--gold); font-size: .7rem; }
+.row-inprog { opacity: .82; }
+.course-note {
+  font-size: .7rem;
+  color: var(--text-soft);
+  font-style: italic;
+  margin-top: 1px;
+}
+
+/* ═══════════════════════════════════════════════
+   SECTION 3 – TRANSFER CONTROLS
+═══════════════════════════════════════════════ */
+.controls-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.controls-label {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--text-mid);
+  margin-bottom: 6px;
+}
+.select-wrap {
+  position: relative;
+  max-width: 360px;
+}
+.select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 14px; top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--text-soft);
+  pointer-events: none;
+}
+select {
+  width: 100%;
+  appearance: none;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 11px 40px 11px 14px;
+  font-size: .9rem;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color .2s, box-shadow .2s;
+  outline: none;
+}
+select:focus { border-color: var(--navy-mid); box-shadow: 0 0 0 3px rgba(22,45,94,.12); }
+select.error  { border-color: var(--red); box-shadow: 0 0 0 3px rgba(176,41,42,.1); }
+.btn-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.btn-transfer {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 12px 30px;
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: .02em;
+  display: flex; align-items: center; gap: 8px;
+  transition: opacity .18s, transform .14s, box-shadow .18s;
+  box-shadow: 0 4px 14px rgba(12,26,56,.3);
+}
+.btn-transfer:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 6px 22px rgba(12,26,56,.36); }
+.btn-transfer:active { transform: translateY(0); }
+.btn-transfer svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.controls-hint { font-size: .75rem; color: var(--text-soft); margin-top: 4px; }
+
+/* ═══════════════════════════════════════════════
+   SECTION 4 – EQUIVALENCY TABLE
+═══════════════════════════════════════════════ */
+#equivSection { display: none; animation: fadeUp .45s ease both; }
+.equiv-top {
+  display: flex; flex-wrap: wrap;
+  align-items: center; justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.equiv-heading {
+  font-size: .7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--text-soft);
+  display: flex; align-items: center; gap: 8px;
+}
+.equiv-heading::before { content: ''; display: block; width: 3px; height: 14px; background: var(--gold); border-radius: 2px; }
+.target-pill {
+  background: var(--gold);
+  color: var(--navy);
+  font-weight: 800; font-size: .8rem;
+  padding: 5px 16px; border-radius: 20px;
+  letter-spacing: .02em;
+}
+.progress-bar-wrap {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pbar-label { display: flex; justify-content: space-between; font-size: .78rem; font-weight: 600; color: var(--text-mid); }
+.pbar-label span { color: var(--navy); font-weight: 800; }
+.pbar-track { height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; }
+.pbar-fill { height: 100%; background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 100%); border-radius: 10px; transition: width 1s cubic-bezier(.4,0,.2,1); width: 0; }
+.pbar-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.pbar-chip {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .73rem; font-weight: 600; color: var(--text-mid);
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* Equivalency match tags */
+.tag-exact {
+  display: inline-block;
+  background: var(--blue-tag-bg); color: var(--blue-tag);
+  font-size: .68rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 10px; white-space: nowrap;
+}
+.tag-topic {
+  display: inline-block;
+  background: var(--amber-bg); color: var(--amber);
+  border: 1px solid var(--amber-border);
+  font-size: .68rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 10px; white-space: nowrap;
+}
+.tag-na {
+  display: inline-block;
+  color: var(--text-soft); font-style: italic; font-size: .82rem;
+}
+.equiv-note { font-size: .71rem; color: var(--text-soft); font-style: italic; margin-top: 2px; }
+
+/* ═══════════════════════════════════════════════
+   FOOTER / LEGEND
+═══════════════════════════════════════════════ */
+.legend {
+  display: flex; gap: 18px; flex-wrap: wrap;
+  font-size: .73rem; color: var(--text-soft); margin-top: 12px;
+  padding-top: 12px; border-top: 1px solid var(--border-soft);
+}
+.legend-item { display: flex; align-items: center; gap: 6px; }
+
+footer {
+  text-align: center; padding: 24px; color: var(--text-soft); font-size: .75rem;
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  main { padding: 18px 12px 48px; gap: 16px; }
+  .card { padding: 20px 16px; }
+  .select-wrap { max-width: 100%; }
+  .btn-transfer { width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ████ HEADER ████ -->
+<header>
+  <div class="hdr-inner">
+    <div class="hdr-emblem">🎓</div>
+    <div class="hdr-text">
+      <h1>Transfer Credit Planner</h1>
+      <p>Academic Program Transfer Assistant</p>
+    </div>
+    <div class="hdr-spacer"></div>
+    <div class="hdr-tag">GTU · 2026</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ① CURRENT PROGRAM ─────────────────────────── -->
+  <div class="card">
+    <div class="card-title">Current Academic Program</div>
+    <div class="program-card-body">
+      <div class="program-pill"><span class="program-dot"></span>Computer Science</div>
+      <div class="stat-grid" id="statGrid"></div>
+    </div>
+  </div>
+
+  <!-- ② MY COURSES ──────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">My Course History</div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:108px">Code</th>
+            <th>Course Title</th>
+            <th style="width:110px">Semester</th>
+            <th style="width:80px">Passed</th>
+          </tr>
+        </thead>
+        <tbody id="courseTbody"></tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><span class="dot" style="background:var(--gold)"></span> ✦ Additional course (always counted as passed for transfer)</div>
+      <div class="legend-item"><span class="dot" style="background:var(--amber)"></span> In Progress — not included in transfer equivalencies</div>
+    </div>
+  </div>
+
+  <!-- ③ TRANSFER CONTROLS ───────────────────────── -->
+  <div class="card">
+    <div class="card-title">Program Transfer Selection</div>
+    <div class="controls-body">
+      <div>
+        <div class="controls-label">Select the program you wish to transfer to:</div>
+        <div class="select-wrap">
+          <select id="progSelect">
+            <option value="">— Choose target program —</option>
+            <option value="Computer Engineering">Computer Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Electrical and Electronics Engineering">Electrical and Electronics Engineering</option>
+          </select>
+        </div>
+        <div class="controls-hint">Only passed courses will be evaluated for credit transfer.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-transfer" onclick="runTransfer()">
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          Transfer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ EQUIVALENCY TABLE ───────────────────────── -->
+  <div class="card" id="equivSection">
+    <div class="equiv-top">
+      <div class="equiv-heading">Course Equivalency Results</div>
+      <div class="target-pill" id="targetPill"></div>
+    </div>
+
+    <!-- Progress / summary bar -->
+    <div class="progress-bar-wrap">
+      <div class="pbar-label">
+        Credit Recognition Rate <span id="pbarPct">0%</span>
+      </div>
+      <div class="pbar-track"><div class="pbar-fill" id="pbarFill"></div></div>
+      <div class="pbar-row" id="pbarRow"></div>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:100px">Code</th>
+            <th>My Course (Computer Science)</th>
+            <th>Equivalent in Target Program</th>
+            <th style="width:90px">Match Type</th>
+          </tr>
+        </thead>
+        <tbody id="equivTbody"></tbody>
+      </table>
+    </div>
+
+    <div class="legend" style="margin-top:14px">
+      <div class="legend-item"><span class="tag-exact" style="font-size:.72rem">Exact</span> Same course code exists in target program</div>
+      <div class="legend-item"><span class="tag-topic" style="font-size:.72rem">Topic</span> Different code but equivalent subject matter</div>
+      <div class="legend-item"><span class="tag-na" style="font-style:normal;color:var(--text-soft);font-size:.72rem">N/A</span> No equivalent found — additional study required</div>
+    </div>
+  </div>
+
+</main>
+
+<footer>Academic Transfer Credit Planner · GTU Computer Science · 2025</footer>
+
+<script>
+/* ════════════════════════════════════════════════════
+   COURSE DATA — CS student, Semesters 1–5
+   Sources: CS Catalog (official program document)
+════════════════════════════════════════════════════ */
+const MY_COURSES = [
+  // ─── Semester 1 ───────────────────────────
+  { code:"MATH150", name:"Calculus I",                             sem:1, passed:true  },
+  { code:"CS50",    name:"Introduction to Programming",            sem:1, passed:true  },
+  { code:"P432",    name:"Introduction to Modern Thought I",       sem:1, passed:true  },
+  { code:"CS212",   name:"Cyberlaw and Ethics",                    sem:1, passed:true  },
+  { code:"Q185",    name:"English Language Course C1-1",           sem:1, passed:true  },
+  // ─── Semester 2 ───────────────────────────
+  { code:"MATH151", name:"Calculus II",                            sem:2, passed:true  },
+  { code:"CS211",   name:"Object Oriented Programming",            sem:2, passed:true  },
+  { code:"Q955",    name:"English Language Course C1-2",           sem:2, passed:true  },
+  { code:"DE112",   name:"Mathematical Foundation of Computing",   sem:2, passed:true  },
+  { code:"DE111",   name:"Computer Organization",                  sem:2, passed:true  },
+  // ─── Semester 3 ───────────────────────────
+  { code:"MATH252", name:"Calculus III",                           sem:3, passed:true  },
+  { code:"CS311",   name:"Programming Languages",                  sem:3, passed:true  },
+  { code:"MATH254", name:"Introduction to Linear Algebra",         sem:3, passed:true  },
+  { code:"PHYS195", name:"Basics of Physics I (Including Lab)",    sem:3, passed:true  },
+  { code:"CS214",   name:"Introduction to Computational Linguistics", sem:3, passed:true },
+  // ─── Semester 4 ───────────────────────────
+  { code:"EE300",   name:"Computational and Statistical Methods",  sem:4, passed:true  },
+  { code:"CS312",   name:"Computer and Data Networks",             sem:4, passed:true  },
+  { code:"CS221",   name:"Algorithms and Data Structures",         sem:4, passed:true  },
+  { code:"MATH311", name:"Principles of Numerical Methods",        sem:4, passed:true  },
+  { code:"PHYS196", name:"Basics of Physics II",                   sem:4, passed:true  },
+  // ─── Semester 5 — In Progress ─────────────
+  { code:"CS223",   name:"Introduction to Cybersecurity",          sem:5, passed:false, inProgress:true },
+  { code:"CS313",   name:"Elements of Computational Complexity",   sem:5, passed:false, inProgress:true },
+  { code:"DE101",   name:"Introduction to Operating Systems",      sem:5, passed:false, inProgress:true },
+  { code:"P737",    name:"Academic Techniques",                    sem:5, passed:false, inProgress:true },
+  // ─── 5 Additional Courses (always Yes) ────
+  { code:"CS321",   name:"Introduction to Machine Learning",       sem:6,  passed:true, added:true },
+  { code:"CS322",   name:"Databases and Information Systems",      sem:6,  passed:true, added:true },
+  { code:"CS323",   name:"Design Patterns",                        sem:6,  passed:true, added:true },
+  { code:"CS314",   name:"Distributed and Parallel Computing",     sem:6,  passed:true, added:true },
+  { code:"CS324",   name:"Artificial Neural Networks",             sem:8,  passed:true, added:true },
+];
+
+/* ════════════════════════════════════════════════════
+   TARGET PROGRAM CATALOGS
+   (Derived from official GTU program catalogues)
+════════════════════════════════════════════════════ */
+const PROGRAMS = {
+  "Computer Engineering": [
+    {code:"MATH150",name:"Calculus I"},
+    {code:"PHYS195",name:"Basics of Physics I (Including Lab)"},
+    {code:"P737",   name:"Academic Techniques"},
+    {code:"CS50",   name:"Introduction to Programming"},
+    {code:"MATH151",name:"Calculus II"},
+    {code:"PHYS196",name:"Basics of Physics II"},
+    {code:"DE112",  name:"Mathematical Foundation of Computing"},
+    {code:"DE111",  name:"Computer Organization"},
+    {code:"MATH252",name:"Calculus III"},
+    {code:"MATH254",name:"Introduction to Linear Algebra"},
+    {code:"EE210",  name:"Circuit Analysis I"},
+    {code:"CE111",  name:"Procedural Programming with C"},
+    {code:"EE300",  name:"Computational and Statistical Methods"},
+    {code:"CS312",  name:"Computer and Data Networks"},
+    {code:"CS221",  name:"Algorithms and Data Structures"},
+    {code:"MATH311",name:"Principles of Numerical Methods"},
+    {code:"EE310",  name:"Circuit Analysis II"},
+    {code:"CE375",  name:"Embedded Systems"},
+    {code:"DE101",  name:"Introduction to Operating Systems"},
+    {code:"CE470",  name:"Digital Circuits"},
+    {code:"P432",   name:"Introduction to Modern Thought I"},
+    {code:"EE410",  name:"Signals and Systems"},
+    {code:"R205",   name:"Basics of Entrepreneurship"},
+    {code:"T077",   name:"Architecture and Programming of Microprocessors"},
+    {code:"CS326",  name:"System Programming"},
+    {code:"T028",   name:"IT Project Management"},
+    {code:"CS223",  name:"Introduction to Cybersecurity"},
+    {code:"CE490A", name:"Senior Design Project A"},
+    {code:"CE490B", name:"Senior Design Project B"},
+    // Electives
+    {code:"CS212",  name:"Cyber Law and Ethics"},
+    {code:"CS311",  name:"Programming Languages"},
+    {code:"CS314",  name:"Distributed and Parallel Computing"},
+    {code:"CS321",  name:"Introduction to Machine Learning"},
+    {code:"CS322",  name:"Databases and Information Systems"},
+    {code:"CS324",  name:"Artificial Neural Networks"},
+    {code:"CS214",  name:"Introduction to Computational Linguistics"},
+    {code:"CS222",  name:"Advanced Algorithms and Data Structures"},
+    {code:"CS325",  name:"Computer Graphics"},
+    {code:"CS413",  name:"Web Programming"},
+    {code:"CS417",  name:"Introduction to Natural Language Processing"},
+    {code:"CS421",  name:"Mobile Applications Development"},
+    {code:"CS424",  name:"DevOps Technologies"},
+    {code:"CS425",  name:"Message Queueing and Data Streaming"},
+    {code:"CS426",  name:"Big Data Systems"},
+    {code:"DE114",  name:"Exploratory Data Analysis with Python"},
+    {code:"DE116",  name:"Hardware Design and Prototyping"},
+    {code:"DE117",  name:"Systems, Sustainability and Climate Change"},
+    {code:"EE380",  name:"Electrical Energy Conversion"},
+    {code:"EE420",  name:"Feedback Control Systems"},
+    {code:"EE450",  name:"Digital Signal Processing"},
+    {code:"EE458",  name:"Analog and Pulse Communication Systems"},
+    {code:"EE480",  name:"Power System Analysis"},
+    {code:"EE483",  name:"Power Distribution Systems"},
+    {code:"EE534",  name:"Solid State Devices"},
+    {code:"S826",   name:"Introduction to Computer Modeling"},
+    {code:"T026",   name:"Software Architecture and Engineering"},
+    {code:"U589",   name:"AWS Cloud Practitioner"},
+    {code:"U837",   name:"Drones"},
+    {code:"UNI007", name:"Introduction to Artificial Intelligence"},
+  ],
+
+  "Electrical and Electronics Engineering": [
+    {code:"MATH150",name:"Calculus I"},
+    {code:"PHYS195",name:"Basics of Physics I (Including Lab)"},
+    {code:"Q185",   name:"English Language Course C1-1"},
+    {code:"P432",   name:"Introduction to Modern Thought I"},
+    {code:"CS50",   name:"Introduction to Programming"},
+    {code:"MATH151",name:"Calculus II"},
+    {code:"PHYS196",name:"Basics of Physics II"},
+    {code:"Q955",   name:"English Language Course C1-2"},
+    {code:"DE112",  name:"Mathematical Foundation of Computing"},
+    {code:"DE111",  name:"Computer Organization"},
+    {code:"MATH252",name:"Calculus III"},
+    {code:"CHEM100",name:"Introduction to General Chemistry (Including Lab)"},
+    {code:"MATH254",name:"Introduction to Linear Algebra"},
+    {code:"EE210",  name:"Circuit Analysis I"},
+    {code:"CE111",  name:"Procedural Programming with C"},
+    {code:"EE300",  name:"Computational and Statistical Methods"},
+    {code:"EE330",  name:"Fundamentals of Engineering Electronics"},
+    {code:"EE310",  name:"Circuit Analysis II"},
+    {code:"MATH311",name:"Principles of Numerical Methods"},
+    {code:"P737",   name:"Academic Techniques"},
+    {code:"CE375",  name:"Embedded Systems"},
+    {code:"EE340",  name:"Electric and Magnetic Fields"},
+    {code:"EE380",  name:"Electrical Energy Conversion"},
+    {code:"EE430",  name:"Analysis and Design of Electronic Circuits"},
+    {code:"EE410",  name:"Signals and Systems"},
+    {code:"EE434",  name:"Electronic Materials and Devices"},
+    {code:"EE440",  name:"Electromagnetic Waves"},
+    {code:"EE450",  name:"Digital Signal Processing"},
+    {code:"EE458",  name:"Analog and Pulse Communication Systems"},
+    {code:"EE480",  name:"Power System Analysis"},
+    {code:"EE483",  name:"Power Distribution Systems"},
+    {code:"EE490A", name:"Senior Design Project Conception"},
+    {code:"EE490B", name:"Senior Design Project"},
+    {code:"EE420",  name:"Feedback Control Systems"},
+    {code:"EE455",  name:"Antenna Theory and Design"},
+    // Electives
+    {code:"CE470",  name:"Digital Circuits"},
+    {code:"CE470L", name:"Digital Logic Laboratory"},
+    {code:"DE116",  name:"Hardware Design and Prototyping"},
+    {code:"DE117",  name:"Systems, Sustainability and Climate Change"},
+    {code:"EE510",  name:"Introduction to Energy Systems and Technologies"},
+    {code:"EE534",  name:"Solid State Devices"},
+    {code:"EE540",  name:"Microwave Devices and Systems"},
+    {code:"T077",   name:"Architecture and Programming of Microprocessors"},
+    {code:"U589",   name:"AWS Cloud Practitioner"},
+    {code:"U837",   name:"Drones"},
+    {code:"UNI007", name:"Introduction to Artificial Intelligence"},
+  ],
+
+  "Civil Engineering": [
+    // No official catalog provided — matched on universally shared foundational courses
+    // that are standard in all engineering programs at GTU.
+    {code:"MATH150",name:"Calculus I"},
+    {code:"MATH151",name:"Calculus II"},
+    {code:"MATH252",name:"Calculus III"},
+    {code:"MATH254",name:"Introduction to Linear Algebra"},
+    {code:"MATH311",name:"Principles of Numerical Methods"},
+    {code:"PHYS195",name:"Basics of Physics I (Including Lab)"},
+    {code:"PHYS196",name:"Basics of Physics II"},
+    {code:"CHEM100",name:"Introduction to General Chemistry"},
+    {code:"P432",   name:"Introduction to Modern Thought I"},
+    {code:"P737",   name:"Academic Techniques"},
+    {code:"EE300",  name:"Computational and Statistical Methods"},
+    {code:"CS50",   name:"Introduction to Programming (as Engineering Computing)"},
+  ],
+};
+
+/* ════════════════════════════════════════════════════
+   TOPIC-BASED EQUIVALENCY OVERRIDES
+   Courses with same domain but different code
+════════════════════════════════════════════════════ */
+const TOPIC = {
+  "Computer Engineering": {
+    // CS211 (OOP, Java/Python) → CE111 (Procedural C)
+    // Both courses serve as the core programming foundation course.
+    // Different paradigm, but same role in curriculum.
+    "CS211": { code:"CE111", name:"Procedural Programming with C",
+               note:"Both are the primary programming course (OOP vs Procedural paradigm)" },
+    // CS323 (Design Patterns) → T026 (Software Architecture and Engineering)
+    // Design Patterns is a subset of Software Architecture.
+    "CS323": { code:"T026",  name:"Software Architecture and Engineering",
+               note:"Design Patterns content is a core component of Software Architecture" },
+  },
+  "Electrical and Electronics Engineering": {
+    // CS211 (OOP) → CE111 (Procedural C) — EE catalog includes CE111
+    "CS211": { code:"CE111", name:"Procedural Programming with C",
+               note:"Both are fundamental programming courses; CE111 is in EE catalog" },
+    // No further topic matches — EE specializes in hardware/signals
+  },
+  "Civil Engineering": {
+    // No topic-based matches for Civil Engineering — the disciplines are too distant
+  },
+};
+
+/* ════════════════════════════════════════════════════
+   EQUIVALENCY ENGINE
+════════════════════════════════════════════════════ */
+function findEquiv(course, target) {
+  const catalog = PROGRAMS[target] || [];
+  const codeMap  = {};
+  catalog.forEach(c => { codeMap[c.code] = c; });
+
+  // Pass 1: Exact code match
+  if (codeMap[course.code]) {
+    return { code: course.code, name: codeMap[course.code].name, type: 'exact' };
+  }
+
+  // Pass 2: Topic-based override
+  const tmap = TOPIC[target] || {};
+  if (Object.prototype.hasOwnProperty.call(tmap, course.code)) {
+    const t = tmap[course.code];
+    if (t && codeMap[t.code]) {
+      return { code: t.code, name: t.name, type: 'topic', note: t.note };
+    }
+    return null; // explicitly no match
+  }
+
+  return null; // N/A
+}
+
+/* ════════════════════════════════════════════════════
+   RENDER: Course Table
+════════════════════════════════════════════════════ */
+function renderCourses() {
+  const tbody = document.getElementById('courseTbody');
+  let passed = 0, inprog = 0, added = 0;
+
+  MY_COURSES.forEach(c => {
+    const tr = document.createElement('tr');
+    if (c.added)      { tr.className = 'row-added';  added++;  }
+    else if (!c.passed){ tr.className = 'row-inprog'; inprog++; }
+    else               { passed++; }
+
+    const semLabel = c.added
+      ? `<span class="sem-badge" style="background:var(--gold-pale);border-color:var(--gold);color:var(--gold)">Additional</span>`
+      : `<span class="sem-badge">Sem ${c.sem}${c.inProgress ? ' ●' : ''}</span>`;
+
+    const passTag = c.passed
+      ? `<span class="badge-yes">✓ Yes</span>`
+      : `<span class="badge-no">✗ No</span>`;
+
+    tr.innerHTML = `
+      <td><span class="code">${c.code}</span></td>
+      <td>
+        <div>${c.name}</div>
+        ${c.inProgress ? '<div class="course-note">Currently in progress — not included in transfer</div>' : ''}
+      </td>
+      <td>${semLabel}</td>
+      <td>${passTag}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Stats
+  const grid = document.getElementById('statGrid');
+  const total = MY_COURSES.length;
+  grid.innerHTML = `
+    <div class="stat-box"><strong>${total}</strong><span>Total</span></div>
+    <div class="stat-box passed"><strong>${passed + added}</strong><span>Passed</span></div>
+    <div class="stat-box inprog"><strong>${inprog}</strong><span>In Progress</span></div>
+    <div class="stat-box"><strong>${added}</strong><span>Additional</span></div>
+  `;
+}
+
+/* ════════════════════════════════════════════════════
+   RENDER: Equivalency Table
+════════════════════════════════════════════════════ */
+function runTransfer() {
+  const sel    = document.getElementById('progSelect');
+  const target = sel.value;
+  if (!target) {
+    sel.classList.add('error');
+    sel.focus();
+    setTimeout(() => sel.classList.remove('error'), 1600);
+    return;
+  }
+
+  const passedCourses = MY_COURSES.filter(c => c.passed);
+  const tbody = document.getElementById('equivTbody');
+  tbody.innerHTML = '';
+
+  let exact = 0, topic = 0, na = 0;
+
+  passedCourses.forEach(c => {
+    const eq = findEquiv(c, target);
+    const tr = document.createElement('tr');
+
+    let eqCell, typeCell;
+    if (eq) {
+      if (eq.type === 'exact') {
+        exact++;
+        eqCell   = `<div><span class="code">${eq.code}</span> — ${eq.name}</div>`;
+        typeCell = `<span class="tag-exact">Exact</span>`;
+      } else {
+        topic++;
+        eqCell   = `<div><span class="code">${eq.code}</span> — ${eq.name}</div>
+                    ${eq.note ? `<div class="equiv-note">${eq.note}</div>` : ''}`;
+        typeCell = `<span class="tag-topic">Topic</span>`;
+      }
+    } else {
+      na++;
+      eqCell   = `<span class="tag-na">N/A — No equivalent found</span>`;
+      typeCell = `<span style="color:var(--text-soft)">—</span>`;
+    }
+
+    tr.innerHTML = `
+      <td><span class="code">${c.code}</span></td>
+      <td>${c.name}</td>
+      <td>${eqCell}</td>
+      <td>${typeCell}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Progress bar
+  const total = passedCourses.length;
+  const matched = exact + topic;
+  const pct = Math.round((matched / total) * 100);
+  document.getElementById('pbarPct').textContent = `${pct}%`;
+  document.getElementById('targetPill').textContent = target;
+
+  const fill = document.getElementById('pbarFill');
+  fill.style.width = '0';
+  requestAnimationFrame(() => { setTimeout(() => { fill.style.width = pct + '%'; }, 50); });
+
+  document.getElementById('pbarRow').innerHTML = `
+    <div class="pbar-chip"><span class="dot" style="background:var(--blue-tag)"></span>${exact} exact matches</div>
+    <div class="pbar-chip"><span class="dot" style="background:var(--amber)"></span>${topic} topic-based matches</div>
+    <div class="pbar-chip"><span class="dot" style="background:var(--border)"></span>${na} no equivalent (N/A)</div>
+    <div class="pbar-chip"><span class="dot" style="background:var(--navy-mid)"></span>${total} total passed courses evaluated</div>
+  `;
+
+  // Show section and scroll
+  const sec = document.getElementById('equivSection');
+  sec.style.display = 'block';
+  setTimeout(() => sec.scrollIntoView({ behavior:'smooth', block:'start' }), 80);
+}
+
+// ── Init ──────────────────────────────────────────
+renderCourses();
+</script>
+</body>
+</html>
